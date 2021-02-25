@@ -53,6 +53,8 @@ If everything works well, we should see an instance of a Django application runn
 
 ![alt text](https://scotch-res.cloudinary.com/image/upload/v1542486456/ia8jlkozut4uxwatnqwp.png)
 
+<br>
+
 ### 2. Configure project settings
 
 1. Add app inside INSTALLED_APPS (`settings.py`)
@@ -113,6 +115,8 @@ If everything works well, we should see an instance of a Django application runn
     ```
 
 4. Create new `urls.py` for the app (`app_name/urls.py`)
+
+<br>
 
 ### 3. Configure app settings
 
