@@ -4,6 +4,8 @@ This is a mini side project to tinker around with Django and Selenium by web scr
 
 Please note that this is my **first ever attempt at Selenium** done in < 1 day and my solutions may or may not be the best approach. Feel free to let me know for any improvements!
 
+![Imgur Image](https://imgur.com/6joa7Pb.png)
+
 ## Getting Started with Django
 
 ### 1. Set up your Django project
@@ -377,7 +379,7 @@ To locate the element’s XPath, **right click** and select **Inspect**. This op
 
 `send_keys()` types a key sequence in DOM element which in this case, is the Username and Password input fields.
 
-[IMAGE 1]
+![Imgur Image](https://imgur.com/clnBcFf.png)
 
 <br>
 
@@ -389,7 +391,7 @@ My next goal is to redirect to MAYA's Search Timetable page, which allows me to 
 
 Normally, most websites would have a simple HTML structure where most elements will contain a unique but straightforward attributes such as `id` and `class` which you can manipulate for finding elements. However, this is unfortunately not the case for MAYA.
 
-[IMAGE SHOWING HTML STRUCTURE OF MAYA]
+![Imgur Image](https://imgur.com/AqOgIo1.png)
 
 If you can see clearly, much of the elements' attributes such as `href` for anchor tag are somewhat encrypted/hashed and linked to the user's session. Obviously this is done for security purposes. 
 
@@ -421,7 +423,7 @@ Here, I utilised the `click()` method to mimic cursor-clicking inside the browse
 
 This next stage is hands down the hardest part of the whole project and it clearly demonstrates the aforementioned case of obscuring ID's and classes. It involves filling up the 'Search Timetable' form shown below:
 
-[IMAGE SHOWING HTML STRUCTURE OF MAYA]
+![Imgur Image](https://imgur.com/VOae6Sj.png)
 
 ```html
 <label for="POP_UDEF.F1C9C66D61D74A2087AA32FF9EE17931.POP.MENSYS.1-1" class="sv-col-sm-3 sv-control-label">Academic Year*</label>
@@ -497,7 +499,11 @@ select_campus.select_by_visible_text('UNIVERSITI MALAYA KUALA LUMPUR')
 submit_timetable = driver.find_element_by_xpath("//*[@id='poddatasection']/div[2]/div[3]/div/input[3]").click()
 ```
 
-[IMAGE 2]
+![Imgur Image](https://imgur.com/lKAhi6m.png)
+
+![Imgur Image](https://imgur.com/ACEYrjn.png)
+
+![Imgur Image](https://imgur.com/sZwk2N9.png)
 
 <br>
 
@@ -506,6 +512,11 @@ submit_timetable = driver.find_element_by_xpath("//*[@id='poddatasection']/div[2
 Once we have submitted the 'Search Timetable' form, we finally arrived at the desired page which is the 'Teaching Timetable' page, where all the course schedules (called 'module occurrences') are displayed. 
 
 This final task involves extracting all the data displayed in the table, which I identified as in DataTables format. For those who don't know, [**DataTables**](https://datatables.net) is a plug-in for the jQuery Javascript library. It is a highly flexible tool, built upon the foundations of progressive enhancement, that adds all of these advanced features to any HTML table.
+
+![Imgur Image](https://imgur.com/iEtcv6r.png)
+
+![Imgur Image](https://imgur.com/dET74Ue.png)
+
 
 This poses a few challenges:
 1. **Extracting** the **data stored** in **each row** (including the header)
@@ -545,6 +556,7 @@ I managed to solve these two challenges as follows:
 
     - The last step is the extraction process. I need to s**tore all the scrapped data** inside a **text file** by using a **simple file I/O**. I also captured the case where the text file does not exist.
     - Note that the file has to be set in 'append' ('a') setting since configuring it to 'write' ('w') will overrite the content each time the loop repeats.
+    <br>
 
     ```python
     for i in range (int(last_page_num)):
@@ -569,9 +581,27 @@ I managed to solve these two challenges as follows:
     - Once all table rows in a particular page has been extracted, Selenium will click the 'Next' button to proceed to the next page. The cycle repeats.
     - When everything is done, we close the I/O with `f.close()`.
 
+And voila! All the course schedules will be extracted and written inside the `maya.txt` text file!
 
+<hr>
 
+## References
 
-
+1. https://pypi.org/project/selenium/
+2. https://selenium-python.readthedocs.io/getting-started.html
+3. https://selenium-python.readthedocs.io/locating-elements.html
+4. https://www.scrapingbee.com/blog/selenium-python/
+5. https://towardsdatascience.com/web-scraping-using-selenium-python-8a60f4cf40ab
+6. https://kelvinmwinuka.medium.com/running-selenium-on-macos-using-chromedriver-96ef851282b5
+7. https://www.scrapingbee.com/blog/practical-xpath-for-web-scraping/
+8. https://www.kenst.com/2015/03/installing-chromedriver-on-mac-osx/
+8. https://www.javaer101.com/en/article/1006361.html
+9. https://stackoverflow.com/questions/29858752/error-message-chromedriver-executable-needs-to-be-available-in-the-path
+10. https://selenium-python.readthedocs.io/api.html#selenium.webdriver.remote.webelement.WebElement.get_attribute
+11. https://stackoverflow.com/questions/7867537/how-to-select-a-drop-down-menu-value-with-selenium-using-python
+12. https://stackoverflow.com/questions/39611956/how-to-get-all-the-elements-of-a-html-table-with-pagination-using-selenium
+13. https://stackoverflow.com/questions/20986631/how-can-i-scroll-a-web-page-using-selenium-webdriver-in-python
+14. https://stackoverflow.com/questions/41553189/edit-element-in-browser-with-python-selenium
+15. https://pypi.org/project/python-dotenv/
 
 
