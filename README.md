@@ -2,6 +2,8 @@
 
 This is a mini side project to tinker around with Django and Selenium by web scraping FSKTM course timetable from MAYA as part of my self-learning prior to FYP.
 
+Please note that this is my **first ever attempt at Selenium** done in < 1 day and my solutions may or may not be the best approach. Feel free to let me know for any improvements!
+
 ## Getting Started with Django
 
 ### 1. Set up your Django project
@@ -371,7 +373,15 @@ Normally, most websites would have a simple HTML structure where most elements w
 
 [IMAGE SHOWING HTML STRUCTURE OF MAYA]
 
-If you can see clearly, much of the elements' attributes such as `href` for anchor tag are somewhat encrypted/hashed and linked to the user's session. Obviously this is done for security purposes. However, this makes it much, much harder for me to mimic the interaction properly.
+If you can see clearly, much of the elements' attributes such as `href` for anchor tag are somewhat encrypted/hashed and linked to the user's session. Obviously this is done for security purposes. 
+
+```html
+<a role="button" href="../wrd/SIW_POD.start_url?CA0D2CBA7E7A40B4Prj-9fG3lZZiN6_h3HOcPlM90_2TQ3CTYLeGYXH4ryqqi-Hfrfz936h2qegofnf16s4AW2Mb7gwV5EcqOYjofk8-FCvH6NU2XVmZYA7qt4UAGxjNyG_jk4swwW5d2cLnDCtCLr4Ubr2uZXF9wjeiVK0oYm8HiigicuumeEvKanxW0hltEIwXfdjFZiYCIIwi4uTZavngKUUk38jmd2tS6b6npTNQELrCKzSkGHu4Ea8" class="sv-btn sv-btn-block sv-btn-danger">
+	<h1><span class="glyphicon glyphicon-search"></span></h1> Search Timetable
+</a>
+```
+
+However, this makes it **much, much harder for me** to mimic the interaction properly.
 
 Ideally, you should use XPath that utilises the element's `id` and `class`. Instead, due to the aforementioned case, I had to resort by directly extracting the XPath from the browser itself (based on element hierarchy):
 
@@ -389,10 +399,83 @@ Here, I utilised the `click()` method to mimic cursor-clicking inside the browse
 
 ### 3. Filling Up Search Timetable Form
 
-This next stage is hands down the hardest part of the whole project and it clearly demonstrates the aforementioned case of obscuring ID's and classes. 
+This next stage is hands down the hardest part of the whole project and it clearly demonstrates the aforementioned case of obscuring ID's and classes. It involves filling up the 'Search Timetable' form shown below:
 
 [IMAGE SHOWING HTML STRUCTURE OF MAYA]
 
+```html
+<label for="POP_UDEF.F1C9C66D61D74A2087AA32FF9EE17931.POP.MENSYS.1-1" class="sv-col-sm-3 sv-control-label">Academic Year*</label>
+<span id="POP_UDEF_F1C9C66D61D74A2087AA32FF9EE17931_POP_MENSYS_1_1_chosenspan">2009/2010</span>
+```
+
+Upon close inspection, I realised that the HTML structure for this page involves even more encryption or obscuring of IDs and classes. They **change every time you refresh the page**, so it confirms my suspicion that it is based on the user's session. 
+
+I spent hours being stuck at this phase and was on the point of giving up. However, that's when I had an eureka moment. 
+
+When I reinspected and reanalysed the HTML structure once again, I realised that there exists a pattern with the way the IDs and classes are configured. Although slightly differing in format (e.g. some '.'s are replaced with '_'), they all share the same 'encryption' code, so to speak.
+
+After a bit of brainstorming, I drafted the following algorithm to test out:
+1. **Get encrypted ID** from one of the elements (preferably standalone and unnested) using **hierarchy-based XPath**
+2. **Modify** the encrypted ID based on the **identified pattern/format**
+3. **Fill in the form** using Selenium DOM (select the dropdown, and then select the desired option)
+
+#### Get encrypted ID
+
+For this part, I utilised one of the elements that I find easiest to extract. I copied its XPath and used the `get_attribute()` function to retrieve the encrypted ID.
+
+```html
+<label for="POP_UDEF.F1C9C66D61D74A2087AA32FF9EE17931.POP.MENSYS.1-1" class="sv-col-sm-3 sv-control-label">Academic Year*</label>
+```
+
+```python
+login_id = driver.find_element_by_xpath('//*[@id="poddatasection"]/div[2]/div[2]/div/div/fieldset/div[2]/label').get_attribute("for")
+login_id_modified = login_id.removesuffix('.1-1').replace(".", "_")
+login_id_truncated = login_id.removesuffix('.1-1')
+```
+
+Then, I **declared two variables** to store the encrypted ID that was modified in different ways, based on my key observation of the format. 
+
+My observations:
+1. The select dropdown input fields use encrypted IDs that are slightly modified (replacing '.' with '\_') and appended with a suffix ('\_#\_1', where # = index of select dropdown input fields)
+
+    - Example:
+    ```html
+    <div class="chosen-container chosen-container-single" style="width: 100%;" title="" id="POP_UDEF_F1C9C66D61D74A2087AA32FF9EE17931_POP_MENSYS_1_1_chosen" tabindex="-1">
+    ...
+    </div>
+    ```
+2. The options for each select dropdown input field use encrypted IDs that are appended with a different suffix ('\_#\_%', where # = index of parent select dropdown input field and % = index of option to be selected)
+
+    - Example:
+    ```html
+    <li class="active-result result-selected" data-option-array-index="11" style="" id="POP_UDEF.F1C9C66D61D74A2087AA32FF9EE17931.POP.MENSYS.1-111" role="option" tabindex="-1">2020/2021</li>
+    ```
+
+For some unknown reason, the first three select dropdown input fields do not function like a typical select dropdown. Instead of setting the selected option as `selected`, the selection process is done elsewhere in another section of the code. This is most probably due to the system using some sort of CSS/JS package.
+
+For the 'Campus Location' select dropdown input field, since it functions normally unlike the others, I utilised `from selenium.webdriver.support.ui import Select` module to help click the select dropdown input field and select the desired option using `select_by_visible_text()` function.
+
+With all these things in mind, I successfully managed to fill in and submit the form using the following code:
+
+```python
+login_id = driver.find_element_by_xpath('//*[@id="poddatasection"]/div[2]/div[2]/div/div/fieldset/div[2]/label').get_attribute("for")
+login_id_modified = login_id.removesuffix('.1-1').replace(".", "_")
+login_id_truncated = login_id.removesuffix('.1-1')
+
+select_year_dropdown = driver.find_element_by_xpath("//*[@id='" + login_id_modified + "_1_1_chosen']/a").click()
+select_year = driver.find_element_by_xpath("//*[@id='" + login_id_truncated + ".1-111']").click()
+
+select_semester_dropdown = driver.find_element_by_xpath("//*[@id='" + login_id_modified + "_2_1_chosen']/a").click()
+select_semester = driver.find_element_by_xpath("//*[@id='" + login_id_truncated + ".2-120']").click()
+
+select_faculty_dropdown = driver.find_element_by_xpath("//*[@id='" + login_id_modified + "_3_1_chosen']/a").click()
+select_faculty = driver.find_element_by_xpath("//*[@id='" + login_id_truncated + ".3-121']").click()
+
+select_campus = Select(driver.find_element_by_id(login_id.removesuffix('.1-1') + '.5-1'))
+select_campus.select_by_visible_text('UNIVERSITI MALAYA KUALA LUMPUR')
+
+submit_timetable = driver.find_element_by_xpath("//*[@id='poddatasection']/div[2]/div[3]/div/input[3]").click()
+```
 
 
 
