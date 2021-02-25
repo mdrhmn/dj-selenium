@@ -155,7 +155,7 @@ If everything works well, we should see an instance of a Django application runn
         - This looks for a module called `urls.py` inside the application and registers any URLs defined there.
         - Whenever you visit the root path of your URL (localhost:8000), the application’s URLs will be registered.
 
-## Using Selenium in Django
+## Getting Started with Selenium
 
 ### What is Web Scraping?
 
@@ -200,7 +200,7 @@ For this project, I am using Chrome's webdriver called **Chromedriver**. There a
         driver = webdriver.Chrome(ChromeDriverManager().install())
         ```
 
-2. **Manual download** from [Chrome's website](https://sites.google.com/a/chromium.org/chromedriver/downloads)
+2. **Manual download** from [**Chrome's website**](https://sites.google.com/a/chromium.org/chromedriver/downloads)
 
     - Load package:
         ```python
@@ -208,3 +208,42 @@ For this project, I am using Chrome's webdriver called **Chromedriver**. There a
 
         driver = webdriver.Chrome(executable_path='/path/to/chromedriver)
         ```
+
+### Set Up Selenium in Django
+
+Depending on the use case, you can set up Selenium codes inside `views.py` for direct use or pair with **Celery/Django-Crontab** (a discussion for another time).
+
+The following code snippet is set up inside `views.py`:
+
+```python
+# Django
+from django.http import HttpResponseRedirect
+from django.shortcuts import render, redirect
+import os
+
+# Selenium
+from selenium import webdriver
+from selenium.webdriver.chrome.options import Options
+
+def scrap(request):
+    options = Options()
+    options.headless = True
+    options.add_argument("--window-size=1920,1080")
+
+    driver = webdriver.Chrome(options=options)
+```
+
+I defined a function called `scrap()` to contain the Selenium initialisation codes. `selenium.webdriver.chrome.options` allows us to specify the Selenium webdriver settings such as the following:
+
+```python
+# Add single argument (method 1)
+options.add_argument("--window-size=1920,1080")
+
+# Add single argument (method 2)
+options.headless = True
+
+# Add many arguments
+options.AddArguments("--headless", "--window-size=1920,1080", "--disable-gpu", "--disable-extensions", "--no-sandbox", "--incognito")
+```
+
+The important option setting to highlight here is **headless**, which allows you to **launch the browser without creating a visual browser window**. This way, you can run tests faster and with fewer resources, and most importantly, it will allow you to run tests on systems without a graphical component. 
