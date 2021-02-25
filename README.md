@@ -4,7 +4,7 @@ This is a mini side project to tinker around with Django and Selenium by web scr
 
 Please note that this is my **first ever attempt at Selenium** done in < 1 day and my solutions may or may not be the best approach. Feel free to let me know for any improvements!
 
-![Imgur Image](https://imgur.com/SouJXH1.png)
+![Imgur Image](https://imgur.com/PUaBB2I.png)
 
 ## Getting Started with Django
 
