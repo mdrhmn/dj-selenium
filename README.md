@@ -497,6 +497,81 @@ select_campus.select_by_visible_text('UNIVERSITI MALAYA KUALA LUMPUR')
 submit_timetable = driver.find_element_by_xpath("//*[@id='poddatasection']/div[2]/div[3]/div/input[3]").click()
 ```
 
+[IMAGE 2]
+
+<br>
+
+### 4. Extracting Course Timetables from DataTables
+
+Once we have submitted the 'Search Timetable' form, we finally arrived at the desired page which is the 'Teaching Timetable' page, where all the course schedules (called 'module occurrences') are displayed. 
+
+This final task involves extracting all the data displayed in the table, which I identified as in DataTables format. For those who don't know, [**DataTables**](https://datatables.net) is a plug-in for the jQuery Javascript library. It is a highly flexible tool, built upon the foundations of progressive enhancement, that adds all of these advanced features to any HTML table.
+
+This poses a few challenges:
+1. **Extracting** the **data stored** in **each row** (including the header)
+2. **Iterating step 1** for **each page** in the DataTable (how to know what is the last page?)
+
+I managed to solve these two challenges as follows:
+
+1. Get last page number
+   
+    ```python
+    last_page = driver.find_element_by_xpath("//*[@id='DataTables_Table_0_last']/a")
+    driver.execute_script("arguments[0].click();", last_page)
+    last_page_num = driver.find_element_by_xpath("//*[@id='DataTables_Table_0_paginate']/ul/li[7]/a").get_attribute('text')
+    first_page = driver.find_element_by_xpath("//*[@id='DataTables_Table_0_first']/a")
+    driver.execute_script("arguments[0].click();", first_page)
+    ```
+
+    - Firstly, I need to find a way to **get the last page number** to be used as terminating condition for the loop to be used for iterating through the pages.
+    - Because the DataTable pagination also includes a handy **'First' and 'Last' button** to indicate skipping to the first and last page of the table, I utilised them by first clicking the 'Last' button and **get its page number** using the `get_attribute('text')` method. Then, I **reverted back to the 'First' page** by clicking the 'First' button. 
+
+2. Extract whole table
+
+    ```python
+    table_element = driver.find_element_by_xpath("//*[@id='DataTables_Table_0_wrapper']")
+    ```
+
+    - Next, I need to **extract the entire DataTable**. This can easily be done by using the **XPath** of the **table's wrapper**.
+
+3. Iterate through table pages and rows and extract data
+
+    ```python
+    if not os.path.exists("maya.txt"):
+        f = open("maya.txt", "a")
+    else:
+        f = open("maya.txt", "a")
+    ```
+
+    - The last step is the extraction process. I need to s**tore all the scrapped data** inside a **text file** by using a **simple file I/O**. I also captured the case where the text file does not exist.
+    - Note that the file has to be set in 'append' ('a') setting since configuring it to 'write' ('w') will overrite the content each time the loop repeats.
+
+    ```python
+    for i in range (int(last_page_num)):
+        for tr in table_element.find_elements_by_tag_name('tr'):
+
+            if tr.get_attribute('class') == '' or tr.get_attribute('class') == None:
+                f.write("PAGE " + str(i + 1) + "\n\n")
+                f.write(tr.text)
+            else:
+                f.write(tr.text)
+
+            f.write("\n\n")
+
+        next_page = driver.find_element_by_xpath("//*[@id='DataTables_Table_0_next']/a")
+        driver.execute_script("arguments[0].click();", next_page)
+
+    f.close()
+    ```
+
+    - For the extraction, I used a **nested for-loop**. The **first for-loop iterates through the pages** with the last page number as the terminating condition. The **second for-loop iterates through each row** in the table page.
+    - I also did some styling such as writing the page number as well as writing newlines to separate between pages.
+    - Once all table rows in a particular page has been extracted, Selenium will click the 'Next' button to proceed to the next page. The cycle repeats.
+    - When everything is done, we close the I/O with `f.close()`.
+
+
+
+
 
 
 
