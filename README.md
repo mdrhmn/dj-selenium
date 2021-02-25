@@ -157,15 +157,21 @@ If everything works well, we should see an instance of a Django application runn
         - This looks for a module called `urls.py` inside the application and registers any URLs defined there.
         - Whenever you visit the root path of your URL (localhost:8000), the application’s URLs will be registered.
 
+<hr>
+
 ## Getting Started with Selenium
 
 ### What is Web Scraping?
 
 Web scraping is a technique for extracting information from the internet automatically using a software that simulates human web surfing.
 
+<br>
+
 ### What is Selenium?
 
 Selenium is a **free (open-source) automated testing framework** used to validate web applications across different browsers and platforms. It can be used for **automating web browsers to do a number of tasks** such as web-scraping.
+
+<br>
 
 ### Installing Selenium
 
@@ -174,6 +180,8 @@ To install Selenium:
     $ pip install selenium # (Python 2)
     $ pip3 install selenium # (Python 3)
 ``` 
+
+<br>
 
 ### Installing Webdrivers
 
@@ -210,6 +218,8 @@ For this project, I am using Chrome's webdriver called **Chromedriver**. There a
 
         driver = webdriver.Chrome(executable_path='/path/to/chromedriver)
         ```
+
+<br>
 
 ### Set Up Selenium in Django
 
@@ -249,6 +259,8 @@ options.AddArguments("--headless", "--window-size=1920,1080", "--disable-gpu", "
 ```
 
 The important option setting to highlight here is **headless**, which allows you to **launch the browser without creating a visual browser window**. This way, you can run tests faster and with fewer resources, and most importantly, it will allow you to run tests on systems without a graphical component. 
+
+<hr>
 
 ## Web-Scrapping MAYA UM using Selenium
 
@@ -363,6 +375,8 @@ To locate the element’s XPath, **right click** and select **Inspect**. This op
 
 [IMAGE 1]
 
+<br>
+
 ### 2. Redirecting to Search Timetable page
 
 One of the important tips of webscraping is to understand the structure of the website. This can be done by using the browser's developer tools as previously mentioned (for Chrome, it's Inspect/Inspect Element).
@@ -396,6 +410,8 @@ search_timetable = driver.find_element_by_xpath(
 While this works fine, it is not the best approach as it is **fragile solution** and will not work if the developer changes the structure in the future. In other words, it's not futureproof.  
 
 Here, I utilised the `click()` method to mimic cursor-clicking inside the browser.
+
+<br>
 
 ### 3. Filling Up Search Timetable Form
 
