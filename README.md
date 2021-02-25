@@ -583,6 +583,8 @@ I managed to solve these two challenges as follows:
 
 And voila! All the course schedules will be extracted and written inside the `maya.txt` text file!
 
+![Imgur Image](https://imgur.com/uR5KA2f.png)
+
 <hr>
 
 ## References
