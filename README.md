@@ -1,6 +1,6 @@
 # MAYA-UM Timetable Scrapper
 
-This is a mini side project to tinker around with Django and Selenium by web scraping FSKTM course timetable from MAYA as part of my self-learning prior to FYP.
+This is a mini side project to tinker around with **Django** and **Selenium** by **web scraping FSKTM course timetable** from [**MAYA UM**](https://maya.um.edu.my/sitsvision/wrd/siw_lgn) as part of my self-learning prior to FYP.
 
 Please note that this is my **first ever attempt at Selenium** done in < 1 day and my solutions may or may not be the best approach. Feel free to let me know for any improvements!
 
