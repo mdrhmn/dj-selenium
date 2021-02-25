@@ -29,7 +29,7 @@ def autologin(driver, url, username, password):
 
 
 def scrap(request):
-    
+
     options = Options()
     options.headless = True
     options.add_argument("--window-size=1920,1080")

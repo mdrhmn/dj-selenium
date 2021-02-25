@@ -250,7 +250,7 @@ The important option setting to highlight here is **headless**, which allows you
 
 ## Web-Scrapping MAYA UM using Selenium
 
-### Going through Authentication
+### 1. Going through Authentication
 
 The first hurdle that I encountered when scraping MAYA is **going through the authentication**. I did some research and luckily I found a working solution from StackOverflow that allows for auto-login:
 
@@ -292,6 +292,8 @@ USERNAME = os.getenv("USERNAME")
 PASSWORD = os.getenv("PASSWORD")
 ```
 
+#### Setting Up Environment Variables
+
 For environment variables storage, I use [**python-dotenv**](https://pypi.org/project/python-dotenv/) package. There are many other Python alternatives for adding `.env` support to your Django/Flask apps in development and deployments. 
 
 To install `python-dotenv`:
@@ -323,6 +325,9 @@ import os
 
 SECRET_KEY = os.getenv("EMAIL")
 DATABASE_PASSWORD = os.getenv("DATABASE_PASSWORD")
+
+autologin(driver, 'https://maya.um.edu.my/sitsvision/wrd/siw_lgn',
+            USERNAME, PASSWORD)
 ```
 
 Next, I defined a function called `autologin()` that accepts the webdriver, site URL, username and password for authentication. 
@@ -342,11 +347,53 @@ def autologin(driver, url, username, password):
     return driver
 ```
 
+#### Extracting XPath
+
 In order to extract the information that you’re looking to scrape, you need to **locate the element’s XPath**. An **XPath** is a syntax used for finding any element on a webpage. 
 
 To locate the element’s XPath, **right click** and select **Inspect**. This opens up the developer tools. Highlight the portion of the site that you want to scrape and **right click on the code**. Select **Copy -> Copy XPath**.
 
-`find_element_by_xpath()` function is used to find an element that matches the XPath given. There are many selectors that you can use to find the right element(s) which you can refer in the official documentation. 
+#### Finding Elements
+
+`find_element_by_xpath()` function is used to find an element that matches the XPath given. There are many selectors that you can use to find the right element(s) which you can refer in the [official documentation](https://selenium-python.readthedocs.io/locating-elements.html). 
 
 `send_keys()` types a key sequence in DOM element which in this case, is the Username and Password input fields.
+
+[IMAGE 1]
+
+### 2. Redirecting to Search Timetable page
+
+One of the important tips of webscraping is to understand the structure of the website. This can be done by using the browser's developer tools as previously mentioned (for Chrome, it's Inspect/Inspect Element).
+
+My next goal is to redirect to MAYA's Search Timetable page, which allows me to filter and access the course timetable. This can be done by first **clicking the 'Timetable' button** which pops up a modal, followed by **clicking the 'Search Timetable' button**. 
+
+Normally, most websites would have a simple HTML structure where most elements will contain a unique but straightforward attributes such as `id` and `class` which you can manipulate for finding elements. However, this is unfortunately not the case for MAYA.
+
+[IMAGE SHOWING HTML STRUCTURE OF MAYA]
+
+If you can see clearly, much of the elements' attributes such as `href` for anchor tag are somewhat encrypted/hashed and linked to the user's session. Obviously this is done for security purposes. However, this makes it much, much harder for me to mimic the interaction properly.
+
+Ideally, you should use XPath that utilises the element's `id` and `class`. Instead, due to the aforementioned case, I had to resort by directly extracting the XPath from the browser itself (based on element hierarchy):
+
+```python
+timetable_popup = driver.find_element_by_xpath(
+   "//a[@href='javascript:timetable_popup();']").click()
+
+search_timetable = driver.find_element_by_xpath(
+   "//*[@id='sits_dialog']/center/div/div/div[3]/a").click()
+```
+
+While this works fine, it is not the best approach as it is **fragile solution** and will not work if the developer changes the structure in the future. In other words, it's not futureproof.  
+
+Here, I utilised the `click()` method to mimic cursor-clicking inside the browser.
+
+### 3. Filling Up Search Timetable Form
+
+This next stage is hands down the hardest part of the whole project and it clearly demonstrates the aforementioned case of obscuring ID's and classes. 
+
+[IMAGE SHOWING HTML STRUCTURE OF MAYA]
+
+
+
+
 
