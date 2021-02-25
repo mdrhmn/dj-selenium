@@ -247,3 +247,106 @@ options.AddArguments("--headless", "--window-size=1920,1080", "--disable-gpu", "
 ```
 
 The important option setting to highlight here is **headless**, which allows you to **launch the browser without creating a visual browser window**. This way, you can run tests faster and with fewer resources, and most importantly, it will allow you to run tests on systems without a graphical component. 
+
+## Web-Scrapping MAYA UM using Selenium
+
+### Going through Authentication
+
+The first hurdle that I encountered when scraping MAYA is **going through the authentication**. I did some research and luckily I found a working solution from StackOverflow that allows for auto-login:
+
+```python
+def autologin(driver, url, username, password):
+
+    driver.get(url)
+    password_input = driver.find_element_by_xpath("//input[@type='password']")
+    password_input.send_keys(password)
+    username_input = password_input.find_element_by_xpath(
+        ".//preceding::input[not(@type='hidden')]")
+    username_input.send_keys(username)
+    form_element = password_input.find_element_by_xpath(".//ancestor::form")
+    submit_button = form_element.find_element_by_xpath(
+        ".//*[@type='submit']").click()
+    return driver
+
+
+def scrap(request):
+    
+    options = Options()
+    options.headless = True
+    options.add_argument("--window-size=1920,1080")
+
+    driver = webdriver.Chrome(options=options)
+
+    USERNAME = os.getenv("USERNAME")
+    PASSWORD = os.getenv("PASSWORD")
+
+    autologin(driver, 'https://maya.um.edu.my/sitsvision/wrd/siw_lgn',
+              USERNAME, PASSWORD)
+
+```
+
+First, I declared constants `USERNAME` and `PASSWORD` to store the SiswaMail and password environment variables set within the `.env` file. If you fork/clone this repository, remember to **rename** `.settings.env` as `.env` and **fill in environment variables** in the file.
+
+```python
+USERNAME = os.getenv("USERNAME")
+PASSWORD = os.getenv("PASSWORD")
+```
+
+For environment variables storage, I use [**python-dotenv**](https://pypi.org/project/python-dotenv/) package. There are many other Python alternatives for adding `.env` support to your Django/Flask apps in development and deployments. 
+
+To install `python-dotenv`:
+
+```python
+pip install -U python-dotenv
+```
+
+Then, add the following code to `settings.py`:
+```python
+# settings.py
+from dotenv import load_dotenv
+load_dotenv()
+
+# OR, the same with increased verbosity
+load_dotenv(verbose=True)
+
+# OR, explicitly providing path to '.env'
+from pathlib import Path  # Python 3.6+ only
+env_path = Path('.') / '.env'
+load_dotenv(dotenv_path=env_path)
+```
+
+At this point, parsed key/value from the `.env` file is now present as system environment variable and they can be conveniently accessed via `os.getenv()`:
+
+```python
+# settings.py
+import os
+
+SECRET_KEY = os.getenv("EMAIL")
+DATABASE_PASSWORD = os.getenv("DATABASE_PASSWORD")
+```
+
+Next, I defined a function called `autologin()` that accepts the webdriver, site URL, username and password for authentication. 
+
+```python
+def autologin(driver, url, username, password):
+
+    driver.get(url)
+    password_input = driver.find_element_by_xpath("//input[@type='password']")
+    password_input.send_keys(password)
+    username_input = password_input.find_element_by_xpath(
+        ".//preceding::input[not(@type='hidden')]")
+    username_input.send_keys(username)
+    form_element = password_input.find_element_by_xpath(".//ancestor::form")
+    submit_button = form_element.find_element_by_xpath(
+        ".//*[@type='submit']").click()
+    return driver
+```
+
+In order to extract the information that you’re looking to scrape, you need to **locate the element’s XPath**. An **XPath** is a syntax used for finding any element on a webpage. 
+
+To locate the element’s XPath, **right click** and select **Inspect**. This opens up the developer tools. Highlight the portion of the site that you want to scrape and **right click on the code**. Select **Copy -> Copy XPath**.
+
+`find_element_by_xpath()` function is used to find an element that matches the XPath given. There are many selectors that you can use to find the right element(s) which you can refer in the official documentation. 
+
+`send_keys()` types a key sequence in DOM element which in this case, is the Username and Password input fields.
+
